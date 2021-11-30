@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>security on Gary Blog</title>
+    <link>http://blog.garytan.tw/categories/security/</link>
+    <description>Recent content in security on Gary Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-tw</language>
+    <lastBuildDate>Tue, 30 Nov 2021 22:19:10 +0800</lastBuildDate><atom:link href="http://blog.garytan.tw/categories/security/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>HITCON 2021 DEVCORE Wargame Writeup</title>
+      <link>http://blog.garytan.tw/posts/security/hitcon-2021-devcore-wargame-writeup/</link>
+      <pubDate>Tue, 30 Nov 2021 22:19:10 +0800</pubDate>
+      
+      <guid>http://blog.garytan.tw/posts/security/hitcon-2021-devcore-wargame-writeup/</guid>
+      <description>Flag 1 在首頁可以看到一張圖片，URL長成這樣。
+http://web.ctf.devcore.tw/image.php?id=aHBfbTI4M2Zkdy5qcGc=
+其中 aHBfbTI4M2Zkdy5qcGc= 拿去 base64 deocde 會變成 hp_m283fdw.jpg ，發現是一個檔名， 這裡可以嘗試 path traversal。
+嘗試讀取 ../../../../etc/passwd 成功，繼續嘗試讀取 source code。
+先讀取 mount device ../../../../proc/mounts，嘗試找出 web root。
+/dev/sda /usr/share/nginx/frontend ext4 ro,relatime,errors=remount-ro,data=ordered 0 0 /dev/sda /usr/share/nginx/images ext4 rw,relatime,errors=remount-ro,data=ordered 0 0 /dev/sda /usr/share/nginx/b8ck3nd ext4 ro,relatime,errors=remount-ro,data=ordered 0 0 接著讀取 /usr/share/nginx/frontend/index.php 可以發現首頁的 source code。
+裡面有引入 include.php，讀取 include.php 後可以在裡面發現第一個 flag。
+Flag 2 在 order.php 中，可以看到 sig 沒有做型別的驗證，可以利用 PHP 的弱型別繞過程式中的 sig 驗證。
+# order.php require_once(&amp;#39;include.php&amp;#39;); $id = get_get_param(&amp;#39;id&amp;#39;, &amp;#39;&amp;#39;); $sig = get_get_param(&amp;#39;sig&amp;#39;, &amp;#39;&amp;#39;); if (empty($id) || empty($sig)) { header(&amp;#39;Location: /&amp;#39;); exit(); } $id = intval($id); $pdo = get_pdo(); $res = $pdo-&amp;gt;query(&amp;#39;SELECT * FROM orders WHERE id = &amp;#39;.</description>
+    </item>
+    
+  </channel>
+</rss>

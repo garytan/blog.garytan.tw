@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Tags on Gary Blog</title>
+    <link>http://blog.garytan.tw/tags/</link>
+    <description>Recent content in Tags on Gary Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-tw</language>
+    <lastBuildDate>Tue, 30 Nov 2021 22:19:10 +0800</lastBuildDate><atom:link href="http://blog.garytan.tw/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>security</title>
+      <link>http://blog.garytan.tw/tags/security/</link>
+      <pubDate>Tue, 30 Nov 2021 22:19:10 +0800</pubDate>
+      
+      <guid>http://blog.garytan.tw/tags/security/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>writeup</title>
+      <link>http://blog.garytan.tw/tags/writeup/</link>
+      <pubDate>Tue, 30 Nov 2021 22:19:10 +0800</pubDate>
+      
+      <guid>http://blog.garytan.tw/tags/writeup/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
