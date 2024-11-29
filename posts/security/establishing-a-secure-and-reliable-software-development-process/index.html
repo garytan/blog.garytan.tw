@@ -1,0 +1,62 @@
+<!doctype html><html lang=en dir=auto><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="noindex, nofollow"><title>建立安全可靠的軟體開發流程 | Gary Blog</title>
+<meta name=keywords content="security"><meta name=description content="eCloudValley: 架構師淺談 建立安全可靠的軟體開發流程
+安全軟體開發生命週期（SSDLC）介紹
+安全軟體開發生命週期（SSDLC）是一個將安全性考量整合到軟體開發過程中的方法，旨在從一開始就預防和減少安全漏洞。這個方法不僅能提升軟體的安全性，還能減少後期修復安全漏洞的成本。SSDLC 通常包含以下幾個主要階段：需求分析、設計、實作、測試、部署和維護。每個階段都有特定的安全實踐和工具來保障軟體的安全性。
+
+需求分析階段
+
+目標
+確保所有安全需求都得到充分的識別和記錄。
+實作方式
+威脅建模（Threat Modeling）
+
+目的：識別系統中可能存在的威脅，並確定如何應對這些威脅。
+AWS 原生服務：AWS 威脅建模工具（AWS Threat Modeling）可以幫助識別和分析威脅，並提供相應的緩解措施。
+
+安全需求規範
+
+目的：確保安全需求被納入需求規範中，涵蓋認證、授權、數據保護等方面。
+最佳實踐：參考 OWASP Application Security Verification Standard（ASVS）來確定各種安全需求。
+
+
+設計階段
+
+目標
+在設計階段建構安全架構，選擇合適的安全控制措施。
+實作方式
+安全架構設計
+
+目的：應用安全設計模式和最佳實踐，確保系統設計能抵禦已知威脅。
+AWS 原生服務：使用 AWS Well-Architected Framework 中的安全支柱（Security Pillar）來設計安全架構。
+
+設計審查
+
+目的：進行安全設計審查，確保設計符合安全需求。
+AWS 原生服務： AWS Well-Architected Tool 可以幫助審查設計，確保符合安全最佳實踐。
+
+
+實作階段
+
+目標
+編寫安全的程式碼，並進行持續的安全檢查。
+實作方式
+安全程式碼編寫
+
+目的：遵循安全編碼標準和指南，減少程式碼中的安全漏洞。
+資源：參考 OWASP 安全編碼指南，確保程式碼符合安全標準。
+
+靜態應用安全測試（SAST）
+
+目的：使用靜態分析工具檢查程式碼中的安全漏洞。
+AWS 原生服務：Amazon CodeGuru Reviewer 可以自動審查程式碼並提出改進建議。
+
+依賴性管理
+
+目的：確保使用安全的第三方庫和框架，避免引入已知漏洞。
+AWS 原生服務：AWS CodeArtifact 可以管理和存儲軟體包，確保依賴庫的安全性。
+
+在這個階段也建議可以導入版本控制系統 (Git)， Git 使用 SHA-1 來標識每個提交、文件和目錄。這意味著任何變更皆可以被檢測到，這樣的設計確保了數據的完整性，防止了未經授權的修改，且一旦提交被創建並推送到儲存庫中，其歷史記錄是不可變的，這意味著開發者無法隱瞞或篡改他們之前的變更，這提供了一個清晰的審計軌跡，使得任何變更都可以追溯到具體的提交和責任人，若企業所架設的網站疑似遭到攻擊者上傳木馬或後門，開發者可以立即使用最乾淨的版本進行快速重新部署。"><meta name=author content><link rel=canonical href=http://localhost:1313/posts/security/establishing-a-secure-and-reliable-software-development-process/><link crossorigin=anonymous href=/assets/css/stylesheet.d72444526d7ecbdb0015438a7fa89054a658bf759d0542e2e5df81ce94b493ee.css integrity="sha256-1yREUm1+y9sAFUOKf6iQVKZYv3WdBULi5d+BzpS0k+4=" rel="preload stylesheet" as=style><link rel=icon href=http://localhost:1313/favicon.ico><link rel=icon type=image/png sizes=16x16 href=http://localhost:1313/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=http://localhost:1313/favicon-32x32.png><link rel=apple-touch-icon href=http://localhost:1313/apple-touch-icon.png><link rel=mask-icon href=http://localhost:1313/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=en href=http://localhost:1313/posts/security/establishing-a-secure-and-reliable-software-development-process/><noscript><style>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--code-block-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51)}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style></noscript></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add("dark"):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove("dark"):window.matchMedia("(prefers-color-scheme: dark)").matches&&document.body.classList.add("dark")</script><header class=header><nav class=nav><div class=logo><a href=http://localhost:1313/ accesskey=h title="Gary Blog (Alt + H)">Gary Blog</a><div class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu><li><a href=http://localhost:1313/archives/ title=archives><span>archives</span></a></li><li><a href=http://localhost:1313/categories/ title=categories><span>categories</span></a></li><li><a href=http://localhost:1313/tags/ title=tags><span>tags</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class="post-title entry-hint-parent">建立安全可靠的軟體開發流程</h1><div class=post-meta><span title='2024-09-26 13:46:01 +0800 CST'>September 26, 2024</span></div></header><div class=post-content><p><a href=https://www.ecloudvalley.com/tw/blog/sa-talks-establishing-a-secure-and-reliable-software-development-process>eCloudValley: 架構師淺談 建立安全可靠的軟體開發流程</a></p><h2 id=安全軟體開發生命週期ssdlc介紹>安全軟體開發生命週期（SSDLC）介紹<a hidden class=anchor aria-hidden=true href=#安全軟體開發生命週期ssdlc介紹>#</a></h2><p>安全軟體開發生命週期（SSDLC）是一個將安全性考量整合到軟體開發過程中的方法，旨在從一開始就預防和減少安全漏洞。這個方法不僅能提升軟體的安全性，還能減少後期修復安全漏洞的成本。SSDLC 通常包含以下幾個主要階段：需求分析、設計、實作、測試、部署和維護。每個階段都有特定的安全實踐和工具來保障軟體的安全性。</p><ol><li>需求分析階段</li></ol><h3 id=目標>目標<a hidden class=anchor aria-hidden=true href=#目標>#</a></h3><p>確保所有安全需求都得到充分的識別和記錄。</p><h3 id=實作方式>實作方式<a hidden class=anchor aria-hidden=true href=#實作方式>#</a></h3><h4 id=威脅建模threat-modeling>威脅建模（Threat Modeling）<a hidden class=anchor aria-hidden=true href=#威脅建模threat-modeling>#</a></h4><ul><li>目的：識別系統中可能存在的威脅，並確定如何應對這些威脅。</li><li>AWS 原生服務：AWS 威脅建模工具（AWS Threat Modeling）可以幫助識別和分析威脅，並提供相應的緩解措施。</li></ul><h4 id=安全需求規範>安全需求規範<a hidden class=anchor aria-hidden=true href=#安全需求規範>#</a></h4><ul><li>目的：確保安全需求被納入需求規範中，涵蓋認證、授權、數據保護等方面。</li><li>最佳實踐：參考 OWASP Application Security Verification Standard（ASVS）來確定各種安全需求。</li></ul><ol start=2><li>設計階段</li></ol><h3 id=目標-1>目標<a hidden class=anchor aria-hidden=true href=#目標-1>#</a></h3><p>在設計階段建構安全架構，選擇合適的安全控制措施。</p><h3 id=實作方式-1>實作方式<a hidden class=anchor aria-hidden=true href=#實作方式-1>#</a></h3><h4 id=安全架構設計>安全架構設計<a hidden class=anchor aria-hidden=true href=#安全架構設計>#</a></h4><ul><li>目的：應用安全設計模式和最佳實踐，確保系統設計能抵禦已知威脅。</li><li>AWS 原生服務：使用 AWS Well-Architected Framework 中的安全支柱（Security Pillar）來設計安全架構。</li></ul><h4 id=設計審查>設計審查<a hidden class=anchor aria-hidden=true href=#設計審查>#</a></h4><ul><li>目的：進行安全設計審查，確保設計符合安全需求。</li><li>AWS 原生服務： AWS Well-Architected Tool 可以幫助審查設計，確保符合安全最佳實踐。</li></ul><ol start=3><li>實作階段</li></ol><h3 id=目標-2>目標<a hidden class=anchor aria-hidden=true href=#目標-2>#</a></h3><p>編寫安全的程式碼，並進行持續的安全檢查。</p><h3 id=實作方式-2>實作方式<a hidden class=anchor aria-hidden=true href=#實作方式-2>#</a></h3><h4 id=安全程式碼編寫>安全程式碼編寫<a hidden class=anchor aria-hidden=true href=#安全程式碼編寫>#</a></h4><ul><li>目的：遵循安全編碼標準和指南，減少程式碼中的安全漏洞。</li><li>資源：參考 OWASP 安全編碼指南，確保程式碼符合安全標準。</li></ul><h4 id=靜態應用安全測試sast>靜態應用安全測試（SAST）<a hidden class=anchor aria-hidden=true href=#靜態應用安全測試sast>#</a></h4><ul><li>目的：使用靜態分析工具檢查程式碼中的安全漏洞。</li><li>AWS 原生服務：Amazon CodeGuru Reviewer 可以自動審查程式碼並提出改進建議。</li></ul><h4 id=依賴性管理>依賴性管理<a hidden class=anchor aria-hidden=true href=#依賴性管理>#</a></h4><ul><li>目的：確保使用安全的第三方庫和框架，避免引入已知漏洞。</li><li>AWS 原生服務：AWS CodeArtifact 可以管理和存儲軟體包，確保依賴庫的安全性。</li></ul><p>在這個階段也建議可以導入版本控制系統 (Git)， Git 使用 SHA-1 來標識每個提交、文件和目錄。這意味著任何變更皆可以被檢測到，這樣的設計確保了數據的完整性，防止了未經授權的修改，且一旦提交被創建並推送到儲存庫中，其歷史記錄是不可變的，這意味著開發者無法隱瞞或篡改他們之前的變更，這提供了一個清晰的審計軌跡，使得任何變更都可以追溯到具體的提交和責任人，若企業所架設的網站疑似遭到攻擊者上傳木馬或後門，開發者可以立即使用最乾淨的版本進行快速重新部署。</p><ol start=4><li>測試階段</li></ol><h3 id=目標-3>目標<a hidden class=anchor aria-hidden=true href=#目標-3>#</a></h3><p>確保軟體在實際運行中能抵禦各種攻擊。</p><h3 id=實作方式-3>實作方式<a hidden class=anchor aria-hidden=true href=#實作方式-3>#</a></h3><h4 id=動態應用安全測試dast>動態應用安全測試（DAST）<a hidden class=anchor aria-hidden=true href=#動態應用安全測試dast>#</a></h4><ul><li>目的：對運行中的應用程式進行動態分析，檢測漏洞。</li></ul><h4 id=滲透測試>滲透測試<a hidden class=anchor aria-hidden=true href=#滲透測試>#</a></h4><ul><li>目的：模擬攻擊者行為，測試系統防禦能力。</li></ul><h4 id=安全測試自動化>安全測試自動化<a hidden class=anchor aria-hidden=true href=#安全測試自動化>#</a></h4><ul><li>目的：將安全測試整合到 CI/CD 管道中，確保每次更新都經過安全檢查。</li><li>AWS 原生服務：使用 AWS CodePipeline 和 AWS CodeBuild 來建構自動化測試。</li></ul><ol start=5><li>部署階段</li></ol><h3 id=目標-4>目標<a hidden class=anchor aria-hidden=true href=#目標-4>#</a></h3><p>安全地部署應用，確保運行環境的安全性。</p><h3 id=實作方式-4>實作方式<a hidden class=anchor aria-hidden=true href=#實作方式-4>#</a></h3><h4 id=基礎設施即程式碼iac>基礎設施即程式碼（IaC）<a hidden class=anchor aria-hidden=true href=#基礎設施即程式碼iac>#</a></h4><ul><li>目的：使用程式碼管理基礎設施，確保一致性和可重複性。</li><li>AWS 原生服務：AWS CloudFormation 和 AWS CDK 可以幫助自動化和管理基礎設施配置。</li></ul><h4 id=安全配置管理>安全配置管理<a hidden class=anchor aria-hidden=true href=#安全配置管理>#</a></h4><ul><li>目的：確保所有配置符合安全最佳實踐。</li><li>AWS 原生服務：AWS Config 可以幫助監控和管理 AWS 資源的配置。</li></ul><ol start=6><li>維運階段</li></ol><h3 id=目標-5>目標<a hidden class=anchor aria-hidden=true href=#目標-5>#</a></h3><p>持續監控和更新應用，處理新出現的安全威脅。</p><h3 id=實作方式-5>實作方式<a hidden class=anchor aria-hidden=true href=#實作方式-5>#</a></h3><h4 id=持續監控>持續監控<a hidden class=anchor aria-hidden=true href=#持續監控>#</a></h4><ul><li>目的：監控應用和基礎設施的安全狀態，及時發現和處理安全事件。</li><li>AWS 原生服務：AWS CloudTrail、AWS GuardDuty 和 AWS Security Hub 可以提供全面的安全監控。</li></ul><h4 id=漏洞管理>漏洞管理<a hidden class=anchor aria-hidden=true href=#漏洞管理>#</a></h4><ul><li>目的：識別並修補新出現的漏洞，保障系統安全。</li><li>AWS 原生服務：AWS Inspector 可以自動掃描 AWS 資源，發現並報告安全漏洞。</li></ul><h4 id=事件響應>事件響應<a hidden class=anchor aria-hidden=true href=#事件響應>#</a></h4><ul><li>目的：制定並實施安全事件響應計劃，快速應對和處理安全事件。</li></ul><p>實施 SSDLC 不僅需要使用合適的工具和技術，還需要團隊成員的安全意識和協作。通過將安全性融入每個開發階段，可以顯著提高軟體的整體安全性，保護組織和用戶免受潛在威脅。</p></div><footer class=post-footer><ul class=post-tags><li><a href=http://localhost:1313/tags/security/>Security</a></li></ul></footer></article></main><footer class=footer><span>&copy; 2024 <a href=http://localhost:1313/>Gary Blog</a></span> ·
+<span>Powered by
+<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
+        <a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
+</a><script>let menu=document.getElementById("menu");menu&&(menu.scrollLeft=localStorage.getItem("menu-scroll-position"),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}),document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove("dark"),localStorage.setItem("pref-theme","light")):(document.body.classList.add("dark"),localStorage.setItem("pref-theme","dark"))})</script></body></html>
