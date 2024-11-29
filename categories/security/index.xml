@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Security on Gary Blog</title>
-    <link>http://localhost:1313/categories/security/</link>
+    <link>https://blog.garytan.tw/categories/security/</link>
     <description>Recent content in Security on Gary Blog</description>
     <generator>Hugo -- 0.139.2</generator>
     <language>zh-tw</language>
     <lastBuildDate>Thu, 26 Sep 2024 13:46:01 +0800</lastBuildDate>
-    <atom:link href="http://localhost:1313/categories/security/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://blog.garytan.tw/categories/security/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>建立安全可靠的軟體開發流程</title>
-      <link>http://localhost:1313/posts/security/establishing-a-secure-and-reliable-software-development-process/</link>
+      <link>https://blog.garytan.tw/posts/security/establishing-a-secure-and-reliable-software-development-process/</link>
       <pubDate>Thu, 26 Sep 2024 13:46:01 +0800</pubDate>
-      <guid>http://localhost:1313/posts/security/establishing-a-secure-and-reliable-software-development-process/</guid>
+      <guid>https://blog.garytan.tw/posts/security/establishing-a-secure-and-reliable-software-development-process/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://www.ecloudvalley.com/tw/blog/sa-talks-establishing-a-secure-and-reliable-software-development-process&#34;&gt;eCloudValley: 架構師淺談 建立安全可靠的軟體開發流程&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;安全軟體開發生命週期ssdlc介紹&#34;&gt;安全軟體開發生命週期（SSDLC）介紹&lt;/h2&gt;
 &lt;p&gt;安全軟體開發生命週期（SSDLC）是一個將安全性考量整合到軟體開發過程中的方法，旨在從一開始就預防和減少安全漏洞。這個方法不僅能提升軟體的安全性，還能減少後期修復安全漏洞的成本。SSDLC 通常包含以下幾個主要階段：需求分析、設計、實作、測試、部署和維護。每個階段都有特定的安全實踐和工具來保障軟體的安全性。&lt;/p&gt;
@@ -73,9 +73,9 @@
     </item>
     <item>
       <title>企業該如何評估 SOC 需要收容哪種資料</title>
-      <link>http://localhost:1313/posts/security/how-should-organization-evaluate-which-data-soc-needs-to-collect/</link>
+      <link>https://blog.garytan.tw/posts/security/how-should-organization-evaluate-which-data-soc-needs-to-collect/</link>
       <pubDate>Thu, 23 May 2024 11:12:09 +0800</pubDate>
-      <guid>http://localhost:1313/posts/security/how-should-organization-evaluate-which-data-soc-needs-to-collect/</guid>
+      <guid>https://blog.garytan.tw/posts/security/how-should-organization-evaluate-which-data-soc-needs-to-collect/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://www.ecloudvalley.com/tw/blog/sa-talks-how-should-organization-evaluate-which-data-soc-needs-to-collect&#34;&gt;eCloudValley: 架構師淺談 企業該如何評估 SOC 需要收容哪種資料&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;我們可以藉由 SOC 收容各種作業系統、設備以及應用程式產出之日誌紀錄進行關聯分析，我們可以從收容的各端點日誌紀錄發現可能潛在的攻擊風險。那身為資安工程師的我們，該如何去評估決定該將哪些日誌紀錄送至 SOC 中進行儲存及分析？以一般雲端環境如 AWS 為例，我們首要先收容的日誌紀錄會是與 AWS 基礎設施相關的紀錄內容，如：&lt;/p&gt;
 &lt;ol&gt;
@@ -96,31 +96,31 @@
 &lt;li&gt;開啟命令列程序稽核（Command line auditing）
 可於群組原則中開啟此功能（電腦設定 &amp;gt; Windows 設定 &amp;gt; 安全性設定 &amp;gt; 進階稽核設定 &amp;gt; 詳細追蹤 &amp;gt; 稽核程序建立），並且開啟新的原則設定（系統管理範本 &amp;gt; 系統 &amp;gt; 稽核程序建立 &amp;gt; 在程序建立事件中包括命令列），開啟此功能後若有程式執行系統指令即會在 Security eventlog  中記錄一筆 4688 的紀錄。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img alt=&#34;audit_1&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/img/posts/security/how-should-organization-evaluate-which-data-soc-needs-to-collect/1388643462664ef1c9f24eb.png&#34;&gt;
-&lt;img alt=&#34;audit_2&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/img/posts/security/how-should-organization-evaluate-which-data-soc-needs-to-collect/486989219664ef1e51c3c4.png&#34;&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;img alt=&#34;audit_1&#34; loading=&#34;lazy&#34; src=&#34;https://blog.garytan.tw/img/posts/security/how-should-organization-evaluate-which-data-soc-needs-to-collect/1388643462664ef1c9f24eb.png&#34;&gt;
+&lt;img alt=&#34;audit_2&#34; loading=&#34;lazy&#34; src=&#34;https://blog.garytan.tw/img/posts/security/how-should-organization-evaluate-which-data-soc-needs-to-collect/486989219664ef1e51c3c4.png&#34;&gt;&lt;/p&gt;</description>
     </item>
     <item>
       <title>HITCON 2021 DEVCORE Wargame Writeup</title>
-      <link>http://localhost:1313/posts/security/hitcon-2021-devcore-wargame-writeup/</link>
+      <link>https://blog.garytan.tw/posts/security/hitcon-2021-devcore-wargame-writeup/</link>
       <pubDate>Tue, 30 Nov 2021 22:19:10 +0800</pubDate>
-      <guid>http://localhost:1313/posts/security/hitcon-2021-devcore-wargame-writeup/</guid>
+      <guid>https://blog.garytan.tw/posts/security/hitcon-2021-devcore-wargame-writeup/</guid>
       <description>&lt;h2 id=&#34;flag-1&#34;&gt;Flag 1&lt;/h2&gt;
 &lt;p&gt;在首頁可以看到一張圖片，URL長成這樣。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&#34;pic&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/img/posts/security/hitcon-2021-devcore-wargame-writeup/pic.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;pic&#34; loading=&#34;lazy&#34; src=&#34;https://blog.garytan.tw/img/posts/security/hitcon-2021-devcore-wargame-writeup/pic.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;http://web.ctf.devcore.tw/image.php?id=aHBfbTI4M2Zkdy5qcGc=&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;其中 &lt;code&gt;aHBfbTI4M2Zkdy5qcGc=&lt;/code&gt; 拿去 base64 deocde 會變成 &lt;code&gt;hp_m283fdw.jpg&lt;/code&gt; ，發現是一個檔名，
 這裡可以嘗試 path traversal。&lt;/p&gt;
 &lt;p&gt;嘗試讀取 &lt;code&gt;../../../../etc/passwd&lt;/code&gt; 成功，繼續嘗試讀取 source code。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&#34;etc_passwd&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/img/posts/security/hitcon-2021-devcore-wargame-writeup/etc_passwd.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;etc_passwd&#34; loading=&#34;lazy&#34; src=&#34;https://blog.garytan.tw/img/posts/security/hitcon-2021-devcore-wargame-writeup/etc_passwd.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;先讀取 mount device &lt;code&gt;../../../../proc/mounts&lt;/code&gt;，嘗試找出 web root。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&#34;proc_mounts&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/img/posts/security/hitcon-2021-devcore-wargame-writeup/proc_mounts.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;proc_mounts&#34; loading=&#34;lazy&#34; src=&#34;https://blog.garytan.tw/img/posts/security/hitcon-2021-devcore-wargame-writeup/proc_mounts.png&#34;&gt;&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;/dev/sda /usr/share/nginx/frontend ext4 ro,relatime,errors=remount-ro,data=ordered 0 0
 /dev/sda /usr/share/nginx/images ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
 /dev/sda /usr/share/nginx/b8ck3nd ext4 ro,relatime,errors=remount-ro,data=ordered 0 0
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;接著讀取 &lt;code&gt;/usr/share/nginx/frontend/index.php&lt;/code&gt; 可以發現首頁的 source code。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&#34;frontend_index&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/img/posts/security/hitcon-2021-devcore-wargame-writeup/frontend_index.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;frontend_index&#34; loading=&#34;lazy&#34; src=&#34;https://blog.garytan.tw/img/posts/security/hitcon-2021-devcore-wargame-writeup/frontend_index.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;裡面有引入 &lt;code&gt;include.php&lt;/code&gt;，讀取 &lt;code&gt;include.php&lt;/code&gt; 後可以在裡面發現第一個 flag。&lt;/p&gt;
-&lt;p&gt;&lt;img alt=&#34;frontend_include&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/img/posts/security/hitcon-2021-devcore-wargame-writeup/frontend_include.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;frontend_include&#34; loading=&#34;lazy&#34; src=&#34;https://blog.garytan.tw/img/posts/security/hitcon-2021-devcore-wargame-writeup/frontend_include.png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;flag-2&#34;&gt;Flag 2&lt;/h2&gt;
 &lt;p&gt;在 &lt;code&gt;order.php&lt;/code&gt; 中，可以看到 &lt;code&gt;sig&lt;/code&gt; 沒有做型別的驗證，可以利用 PHP 的弱型別繞過程式中的 &lt;code&gt;sig&lt;/code&gt; 驗證。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-php&#34; data-lang=&#34;php&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# order.php
